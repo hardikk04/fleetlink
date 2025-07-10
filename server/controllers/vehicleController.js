@@ -1,16 +1,27 @@
 const bookingModel = require("../models/Booking-model");
 const vehicleModel = require("../models/Vehicle-model");
-const { getAvailablevehicleZodSchema,vehicleZodSchema } = require("../utils/validation");
+const {
+  getAvailablevehicleZodSchema,
+  vehicleZodSchema,
+} = require("../utils/validation");
 
 const addVehicle = async (req, res) => {
   const result = vehicleZodSchema.safeParse(req.body);
+
   if (!result.success) {
     return res.status(400).json({ error: "Missing data in add vehicle" });
   }
 
   const vehicle = await vehicleModel.create(result.data);
+  vehicle.isAvailable = true;
+  await vehicle.save();
   return res.status(201).json(vehicle);
 };
+
+const getAllVehicle = async (req,res)=>{
+  const vehicle = await vehicleModel.find();
+  return res.status(201).json(vehicle);
+}
 
 const getAvailableVehicles = async (req, res) => {
   const result = getAvailablevehicleZodSchema.safeParse(req.query);
@@ -53,4 +64,4 @@ const getAvailableVehicles = async (req, res) => {
   res.json({ vehicles: availableVehicles, estimatedRideDurationHours });
 };
 
-module.exports = { addVehicle, getAvailableVehicles };
+module.exports = { addVehicle, getAvailableVehicles,getAllVehicle };
